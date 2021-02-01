@@ -47,16 +47,14 @@ function generateProject(templateConfig, name) {
   targetRootPath = templateConfig.targetRootPath;
   let targetDir = path.join(targetRootPath, name);
 
-  console.log(templatePath, targetDir);
-
   if (fs.existsSync(targetDir)) {
     // 如果已存在改模块，提问开发者是否覆盖该模块
     inquirer
       .prompt([
         {
-          name: "module-overwrite",
+          name: "project-overwrite",
           type: "confirm",
-          message: `Module named ${name} is already existed, are you sure to overwrite?`,
+          message: `Project named ${name} is already existed, are you sure to overwrite?`,
           validate: function (input) {
             if (input.lowerCase !== "y" && input.lowerCase !== "n") {
               return "Please input y/n !";
@@ -70,15 +68,18 @@ function generateProject(templateConfig, name) {
         console.log("answers", answers);
 
         // 如果确定覆盖
-        if (answers["module-overwrite"]) {
+        if (answers["project-overwrite"]) {
           // 删除文件夹
           shellRes.response = shell.rm("-R", targetDir);
-          console.log(chalk.yellow(`Module already existed , removing...`));
+          console.log(chalk.yellow(`Project already existed , removing...`));
 
           //创建新模块文件夹
           shellRes.response = shell.cp("-R", templatePath, targetDir);
 
-          console.log(chalk.green(`Generate new module "${name}" finished!`));
+          console.log(chalk.green(`Generate new project "${name}" finished! `));
+
+          shellRes.response = shell.cd(targetDir);
+          shellRes.response = shell.exec("npm install");
         }
       })
       .catch((err) => {
@@ -88,11 +89,11 @@ function generateProject(templateConfig, name) {
     //创建新模块文件夹
     shellRes.response = shell.mkdir(targetDir);
     shellRes.response = shell.cp("-R", templatePath, targetDir);
-    console.log(chalk.green(`Generate new module "${name}" finished!`));
-  }
+    console.log(chalk.green(`Generate new project "${name}" finished!`));
 
-  // shellRes.response = shell.cd(targetDir);
-  // shellRes.response = shell.exec("start npm install");
+    shellRes.response = shell.cd(targetDir);
+    shellRes.response = shell.exec("npm install");
+  }
 }
 
 module.exports = generateProject;
