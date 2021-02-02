@@ -4,10 +4,10 @@ const createProject = require("../command/create");
 const config = require('../templates.config');
 
 program
-  .command("new [project]")
+  .command("create [projectName]")
   .description("生成一个新项目")
-  .action(function (project) {
-    createProject(config, project);
+  .action(function (projectName = 'cybertron') {
+    createProject(config, projectName);
   });
 
 program.parse(process.argv);
