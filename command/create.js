@@ -19,7 +19,9 @@ let shellRes = new Proxy(
         case "object":
           if (newVal.code !== 0) {
             shell.echo(
-              `Error: shell 执行失败, Error code: ${newVal.code}, 详细信息: ${newVal.stderr}`
+              chalk.red(
+                `Error code: ${newVal.code}, 详细信息: ${newVal.stderr}`
+              )
             );
             shell.exit(1);
           }
@@ -54,13 +56,15 @@ function generateProject(templateConfig, name) {
         {
           name: "project-overwrite",
           type: "confirm",
-          message: `Project named ${name} is already existed, are you sure to overwrite?`,
+          message: `项目${chalk.blue(name)}已存在, 是否需要覆盖?`,
+          default: false,
           validate: function (input) {
-            if (input.lowerCase !== "y" && input.lowerCase !== "n") {
-              return "Please input y/n !";
-            } else {
-              return true;
+            const done = this.async();
+            if (input.lowerCase !== "y" || input.lowerCase !== "n") {
+              done("请输入 y/n !")
+              return;
             }
+            return done(null ,true);
           },
         },
       ])
@@ -70,15 +74,22 @@ function generateProject(templateConfig, name) {
         // 如果确定覆盖
         if (answers["project-overwrite"]) {
           // 删除文件夹
+          console.log(
+            chalk.yellow(`项目${chalk.blue(name)}已存在, 正在移除...`)
+          );
           shellRes.response = shell.rm("-R", targetDir);
-          console.log(chalk.yellow(`Project already existed , removing...`));
 
           //创建新模块文件夹
+          shellRes.response = shell.mkdir(targetDir);
           shellRes.response = shell.cp("-R", templatePath, targetDir);
 
-          console.log(chalk.green(`Generate new project "${name}" finished! `));
-
           shellRes.response = shell.cd(targetDir);
+
+          console.log(
+            chalk.green(
+              `✅ 创建项目${chalk.blue(name)}成功, 正在安装项目依赖...`
+            )
+          );
           shellRes.response = shell.exec("npm install");
         }
       })
@@ -89,9 +100,11 @@ function generateProject(templateConfig, name) {
     //创建新模块文件夹
     shellRes.response = shell.mkdir(targetDir);
     shellRes.response = shell.cp("-R", templatePath, targetDir);
-    console.log(chalk.green(`Generate new project "${name}" finished!`));
 
     shellRes.response = shell.cd(targetDir);
+    console.log(
+      chalk.green(`✅ 创建项目${chalk.blue(name)}成功, 正在安装项目依赖...`)
+    );
     shellRes.response = shell.exec("npm install");
   }
 }

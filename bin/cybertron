@@ -2,11 +2,16 @@
 const program = require("commander");
 const createProject = require("../command/create");
 const config = require('../templates.config');
+const chalk = require("chalk");
 
 program
   .command("create [projectName]")
   .description("生成一个新项目")
-  .action(function (projectName = 'cybertron') {
+  .action(function (projectName) {
+    if (!projectName) {
+      console.error(chalk.red('error: 缺少项目名'));
+      return;
+    }
     createProject(config, projectName);
   });
 
